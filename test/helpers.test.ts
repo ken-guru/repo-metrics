@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { countCodeLoc, countTestCases, extOf, seemsBinary, countDocLoc } from '../src/repo_test_growth';
+import { countCodeLoc, countTestCases, extOf, seemsBinary, countDocLoc } from '../src/repo-metrics';
 
 describe('helpers', () => {
   it('extOf extracts extension', () => {

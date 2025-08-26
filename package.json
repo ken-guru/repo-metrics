@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "build": "tsc -p .",
-    "start": "node dist/repo_test_growth.js",
-    "scan": "ts-node src/repo_test_growth.ts",
+  "start": "node dist/repo-metrics.js",
+  "scan": "ts-node src/repo-metrics.ts",
   "test": "vitest --run",
   "test:watch": "vitest --watch"
   },

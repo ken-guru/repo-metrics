@@ -9,7 +9,7 @@ export type Args = {
 export function parseArgs(): Args {
   const a = process.argv.slice(2);
   if (a.length === 0) {
-    console.error('Usage: node dist/repo_test_growth.js <repo-url-or-path> [--branch main] [--first-parent] [--include-merges] [--sample-every N] [--max-commits N] [--max-file-bytes BYTES] [--msg-avg-window N] [--output-prefix metrics]');
+  console.error('Usage: node dist/repo-metrics.js <repo-url-or-path> [--branch main] [--first-parent] [--include-merges] [--sample-every N] [--max-commits N] [--max-file-bytes BYTES] [--msg-avg-window N] [--output-prefix metrics]');
     process.exit(2);
   }
   const args: Args = { repo: a[0], branch: null, firstParent: false, includeMerges: false, sampleEvery: 1, maxCommits: null, maxFileBytes: 1_000_000, outputPrefix: 'metrics', msgAvgWindow: 50, verbose: false, plotlySrc: null, csvDecimals: 2, dryRun: false, keepTemp: false, assetsDir: undefined };

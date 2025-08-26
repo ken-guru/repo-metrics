@@ -17,7 +17,7 @@ npm run build
 Run directly against a local repo:
 
 ```bash
-node dist/repo_test_growth.js /path/to/repo --output-prefix my-metrics
+node dist/repo-metrics.js /path/to/repo --output-prefix my-metrics
 ```
 
 Or run with `ts-node` (development):
@@ -71,7 +71,7 @@ Module layout
 - `src/git.ts` - Git plumbing (cloning, listing commits, reading blobs)
 - `src/metrics.ts` - Counting heuristics and `computeMetricsForCommit`
 - `src/output.ts` - CSV and HTML writers, Plotly asset helpers
-- `src/repo_test_growth.ts` - top-level orchestrator/entrypoint; re-exports helpers used in tests
+- `src/repo-metrics.ts` - top-level orchestrator/entrypoint; re-exports helpers used in tests
 
 Running module-level tests
 

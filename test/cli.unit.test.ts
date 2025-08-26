@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { sanitizeOutputPrefix, looksLikeUrl, sanitizeRepoForDisplay } from '../src/repo_test_growth';
+import { sanitizeOutputPrefix, looksLikeUrl, sanitizeRepoForDisplay } from '../src/repo-metrics';
 
 describe('cli module (unit)', () => {
   it('sanitizeOutputPrefix removes unsafe chars', () => {

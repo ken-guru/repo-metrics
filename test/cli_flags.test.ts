@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { describe, it, expect } from 'vitest';
-import { ensureRepo, copyPlotlyToAssets } from '../src/repo_test_growth';
+import { ensureRepo, copyPlotlyToAssets } from '../src/repo-metrics';
 
 describe('cli flags (dry-run, keep-temp)', () => {
   it('dry-run should not clone or write files', async () => {

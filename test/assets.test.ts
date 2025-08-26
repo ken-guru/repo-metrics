@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { describe, it, expect } from 'vitest';
-import { copyPlotlyToAssets } from '../src/repo_test_growth';
+import { copyPlotlyToAssets } from '../src/repo-metrics';
 
 describe('assets helper', () => {
   it('returns undefined if no local plotly present', () => {

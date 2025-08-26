@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { mkdtempSync } from 'node:fs';
 import { simpleGit } from 'simple-git';
-import { computeMetricsForCommit } from '../src/repo_test_growth';
+import { computeMetricsForCommit } from '../src/repo-metrics';
 
 // Integration test: create a tiny git repo and assert metrics
 describe('integration', () => {
