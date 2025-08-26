@@ -7,10 +7,19 @@ Small CLI that scans a Git repository and produces two outputs:
 
 Usage
 
-Install dependencies and build:
+Install dependencies and build (local):
 
 ```bash
 npm install
+npm run build
+```
+
+CI-friendly install (recommended in CI):
+
+```bash
+# use the lockfile for deterministic installs
+npm ci
+npm test
 npm run build
 ```
 
@@ -64,6 +73,10 @@ Notes & suggestions
 - This tool is heuristic-based and attempts to estimate test cases and LOC by file extension and simple regexes. It will not be perfect, especially for languages with unconventional test/matching patterns.
 - For offline HTML output, install `plotly.js-dist-min` locally or let the generated HTML use the CDN; the script prefers a local `node_modules/plotly.js-dist-min/plotly.min.js` path if present.
 - Consider running this tool in an isolated environment (container or VM) when scanning many or untrusted repositories.
+
+Dist / compiled artifacts
+
+- This repository previously committed `dist/` files. For a single source-of-truth and cleaner diffs we recommend not committing compiled artifacts; instead build in CI and publish artifacts from the CI run. If you prefer to keep `dist/` in git, you may ignore this guidance.
 
 Module layout
 
