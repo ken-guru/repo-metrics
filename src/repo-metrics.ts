@@ -94,7 +94,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(__filename
     if (verbose) console.error(err);
     else {
       let msg: string;
-      if (typeof err === 'object' && err !== null && 'message' in err) msg = String((err as any).message);
+      if (err instanceof Error) msg = err.message;
       else msg = String(err);
       console.error(msg);
     }

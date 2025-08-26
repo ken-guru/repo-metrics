@@ -44,7 +44,9 @@ export function writePlotlyHtml(outPath: string, repoLabel: string, rev: string,
 
   const resolvedPlotlySrc = (function(){
     if (plotlySrc) return plotlySrc;
-    try { const localCandidate = 'node_modules/plotly.js-dist-min/plotly.min.js'; if (fs.existsSync(localCandidate)) return localCandidate; } catch(_) {}
+    try { const localCandidate = 'node_modules/plotly.js-dist-min/plotly.min.js'; if (fs.existsSync(localCandidate)) return localCandidate; } catch {
+      // ignore
+    }
     return 'https://cdn.plot.ly/plotly-2.35.2.min.js';
   })();
 
