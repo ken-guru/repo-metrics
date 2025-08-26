@@ -24,7 +24,15 @@ jobs:
             echo "No package-lock.json — falling back to npm install"
             npm install
           fi
-      - name: Build
-        run: npm run build
+      - name: Lint (non-failing)
+        run: npm run lint
       - name: Run tests
         run: npm test --silent
+      - name: Build
+        run: npm run build
+      - name: Upload dist artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
