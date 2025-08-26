@@ -16,7 +16,14 @@ jobs:
         with:
           node-version: '20'
       - name: Install dependencies
-        run: npm ci
+        run: |
+          if [ -f package-lock.json ]; then
+            echo "package-lock.json found — using npm ci"
+            npm ci
+          else
+            echo "No package-lock.json — falling back to npm install"
+            npm install
+          fi
       - name: Build
         run: npm run build
       - name: Run tests
