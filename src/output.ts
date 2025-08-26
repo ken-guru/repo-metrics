@@ -194,23 +194,9 @@ export function writePlotlyHtml(outPath: string, repoLabel: string, rev: string,
           </div>
         </div>
 
-        <div style="display:grid;grid-template-columns:1fr 320px;gap:12px">
-          <div id="plot-main" style="min-height:420px;border-radius:8px;position:relative">
+        <div style="display:grid;grid-template-columns:1fr;gap:12px">
+          <div id="plot-main" style="min-height:640px;border-radius:8px;position:relative">
             <button id="expandMain" class="btn btn-ghost" style="position:absolute;right:8px;top:8px">⤢</button>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:12px">
-            <div class="panel" style="padding:8px;min-height:180px">
-              <div class="small">Tests over time</div>
-              <div id="plot-tests" style="height:160px;position:relative">
-                <button id="expandTests" class="btn btn-ghost" style="position:absolute;right:8px;top:6px">⤢</button>
-              </div>
-            </div>
-            <div class="panel" style="padding:8px;min-height:180px">
-              <div class="small">Avg commit msg length</div>
-              <div id="plot-msg" style="height:160px;position:relative">
-                <button id="expandMsg" class="btn btn-ghost" style="position:absolute;right:8px;top:6px">⤢</button>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -310,18 +296,22 @@ export function writePlotlyHtml(outPath: string, repoLabel: string, rev: string,
     const seriesState = { code:true, docs:true, tests:true, msgAvg:true };
 
     function plot(){
-      // main: code + docs
+      // main: code + docs + tests + msgAvg all on a single canvas
       const palette = [getComputedStyle(document.documentElement).getPropertyValue('--accent-1') || '#0ea5e9', getComputedStyle(document.documentElement).getPropertyValue('--accent-2') || '#7c3aed'];
       const mainTraces = buildMainTraces(palette);
-      Plotly.react(document.getElementById('plot-main'), mainTraces, buildMainLayout(), config);
 
-      // tests sparkline
-      const testsTrace = [{ x: filtered.dates, y: filtered.tests, mode:'lines', line:{color:getComputedStyle(document.documentElement).getPropertyValue('--accent-3')||'#06b6d4',width:2}, hoverinfo:'y', fill:'tozeroy' }];
-      Plotly.react(document.getElementById('plot-tests'), testsTrace, buildSideLayout(), config);
+      // add tests (secondary axis)
+      if(seriesState.tests) mainTraces.push({ x: filtered.dates, y: filtered.tests, name: 'Test cases', mode:'lines', yaxis:'y2', line:{color:getComputedStyle(document.documentElement).getPropertyValue('--accent-3')||'#06b6d4',width:2}, fill:'tozeroy', hovertemplate:'%{x}<br>Tests: %{y:,}<extra></extra>' });
 
-      // msg avg sparkline
-      const msgTrace = [{ x: filtered.dates, y: filtered.msgAvg, mode:'lines', line:{color:'#ef4444',width:2}, hoverinfo:'y' }];
-      Plotly.react(document.getElementById('plot-msg'), msgTrace, buildSideLayout(), config);
+      // add avg message length (secondary axis, but shown as scatter)
+      if(seriesState.msgAvg) mainTraces.push({ x: filtered.dates, y: filtered.msgAvg, name: 'Avg msg len', mode:'lines', yaxis:'y2', line:{color:'#ef4444',width:2,dash:'dot'}, hovertemplate:'%{x}<br>Avg msg len: %{y:.2f}<extra></extra>' });
+
+      const layout = buildMainLayout();
+      // extend layout with a secondary y-axis for counts/averages
+      layout.yaxis2 = { title: 'Tests / Msg length', overlaying: 'y', side: 'right', showgrid: false };
+      layout.margin = layout.margin || { l: 60, r: 60, t: 80, b: 60 };
+
+      Plotly.react(document.getElementById('plot-main'), mainTraces, layout, config);
 
       updateCsvLink();
       renderSummary();
@@ -363,17 +353,18 @@ export function writePlotlyHtml(outPath: string, repoLabel: string, rev: string,
 
       // export and csv
       document.getElementById('imgExport')?.addEventListener('click', ()=>{
-        Plotly.toImage(document.getElementById('plot-main'), {format:'png',height:800,width:1200}).then(url=>{ const a=document.createElement('a'); a.href=url; a.download='${escapeHtml(repoLabel)}-metrics.png'; document.body.appendChild(a); a.click(); a.remove(); });
+        Plotly.toImage(document.getElementById('plot-main'), {format:'png',height:900,width:1400}).then(url=>{ const a=document.createElement('a'); a.href=url; a.download='${escapeHtml(repoLabel)}-metrics.png'; document.body.appendChild(a); a.click(); a.remove(); });
       });
 
       document.getElementById('exportMain')?.addEventListener('click', ()=>{
-        Plotly.toImage(document.getElementById('plot-main'), {format:'png',height:800,width:1200}).then(url=>{ const a=document.createElement('a'); a.href=url; a.download='${escapeHtml(repoLabel)}-main.png'; document.body.appendChild(a); a.click(); a.remove(); });
+        Plotly.toImage(document.getElementById('plot-main'), {format:'png',height:900,width:1400}).then(url=>{ const a=document.createElement('a'); a.href=url; a.download='${escapeHtml(repoLabel)}-main.png'; document.body.appendChild(a); a.click(); a.remove(); });
       });
+      // exportTests and exportMsg now map to the single canvas as well
       document.getElementById('exportTests')?.addEventListener('click', ()=>{
-        Plotly.toImage(document.getElementById('plot-tests'), {format:'png',height:400,width:800}).then(url=>{ const a=document.createElement('a'); a.href=url; a.download='${escapeHtml(repoLabel)}-tests.png'; document.body.appendChild(a); a.click(); a.remove(); });
+        Plotly.toImage(document.getElementById('plot-main'), {format:'png',height:900,width:1400}).then(url=>{ const a=document.createElement('a'); a.href=url; a.download='${escapeHtml(repoLabel)}-tests.png'; document.body.appendChild(a); a.click(); a.remove(); });
       });
       document.getElementById('exportMsg')?.addEventListener('click', ()=>{
-        Plotly.toImage(document.getElementById('plot-msg'), {format:'png',height:400,width:800}).then(url=>{ const a=document.createElement('a'); a.href=url; a.download='${escapeHtml(repoLabel)}-msg.png'; document.body.appendChild(a); a.click(); a.remove(); });
+        Plotly.toImage(document.getElementById('plot-main'), {format:'png',height:900,width:1400}).then(url=>{ const a=document.createElement('a'); a.href=url; a.download='${escapeHtml(repoLabel)}-msg.png'; document.body.appendChild(a); a.click(); a.remove(); });
       });
 
       // expand modal handlers
@@ -405,9 +396,8 @@ export function writePlotlyHtml(outPath: string, repoLabel: string, rev: string,
         if(!overlay) return; overlay.classList.remove('open'); overlay.setAttribute('aria-hidden', 'true');
       }
 
-      document.getElementById('expandMain')?.addEventListener('click', ()=> openModal('Non-test & Markdown LOC', 'main'));
-      document.getElementById('expandTests')?.addEventListener('click', ()=> openModal('Test cases over time', 'tests'));
-      document.getElementById('expandMsg')?.addEventListener('click', ()=> openModal('Avg commit msg length', 'msg'));
+  document.getElementById('expandMain')?.addEventListener('click', ()=> openModal('Combined metrics', 'main'));
+  // expandTests and expandMsg buttons were removed when merging into single canvas
 
       document.getElementById('modalClose')?.addEventListener('click', ()=> closeModal());
       document.getElementById('modalOverlay')?.addEventListener('click', (e)=>{ if(e.target === document.getElementById('modalOverlay')) closeModal(); });
