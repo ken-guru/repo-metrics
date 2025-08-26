@@ -9,10 +9,8 @@
     "scan": "ts-node src/repo-metrics.ts",
     "test": "vitest --run",
     "test:watch": "vitest --watch",
-    "lint": "eslint --ext .ts src test",
-    "lint:fix": "eslint --ext .ts src test --fix",
-    "docs:clean": "rimraf docs && mkdir -p docs",
-    "prepare-pages": "npm run build && npm run docs:clean && node dist/repo-metrics.js . --output-prefix docs || true && mv docs_metrics.html docs/index.html || true && mv docs_metrics.csv docs/metrics.csv || true"
+  "lint": "eslint --ext .ts src test",
+  "lint:fix": "eslint --ext .ts src test --fix"
   },
   "dependencies": {
     "plotly.js-dist-min": "^2.35.2",
@@ -24,8 +22,7 @@
     "vitest": "^3.2.4",
     "typescript": "^5.5.4",
     "eslint": "^9.34.0",
-    "@typescript-eslint/parser": "^8.0.0",
-    "@typescript-eslint/eslint-plugin": "^8.0.0",
-    "rimraf": "^5.0.0"
+  "@typescript-eslint/parser": "^8.0.0",
+  "@typescript-eslint/eslint-plugin": "^8.0.0"
   }
 }
