@@ -1,0 +1,26 @@
+# Node
+node_modules/
+package-lock.json
+
+# Build output
+dist/
+
+# Metrics output
+*.csv
+*.html
+
+# OS files
+.DS_Store
+
+# Temp
+tmp*
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+npm-debug.log*
+
+# Others
+.env
