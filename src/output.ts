@@ -218,9 +218,9 @@ export function writePlotlyHtml(outPath: string, repoLabel: string, rev: string,
     }
 
     function makeCsv(d){
-      const header = ['timestamp_utc','non_test_loc','total_tests','doc_loc'].join(',') + '\n';
+      const header = ['timestamp_utc','non_test_loc','total_tests','doc_loc'].join(',') + '\\n';
       const lines = d.dates.map((dt,i)=>[dt, d.nonTestLoc[i], d.tests[i], d.docLoc[i]].map(v=>String(v).includes(',')? '"'+String(v).replace(/"/g,'""')+'"': String(v)).join(','));
-      return header + lines.join('\n');
+      return header + lines.join('\\n');
     }
 
     function updateCsvLink(){
