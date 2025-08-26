@@ -85,6 +85,15 @@ export function writePlotlyHtml(outPath: string, repoLabel: string, rev: string,
     input[type=range]{width:100%}
     @media (max-width:920px){.main{grid-template-columns:1fr;}.cards{grid-template-columns:repeat(2,1fr)}}
   </style>
+  <style>
+    /* Fullscreen modal for expanded chart */
+    .modal-overlay{position:fixed;inset:0;background:rgba(2,6,23,0.6);display:none;align-items:center;justify-content:center;z-index:1000}
+    .modal-overlay.open{display:flex}
+    .modal{width:90%;height:90%;background:var(--card);border-radius:12px;padding:12px;box-shadow:0 30px 80px rgba(2,6,23,0.6);display:flex;flex-direction:column}
+    .modal .modal-header{display:flex;justify-content:space-between;align-items:center;padding-bottom:8px}
+    .modal .modal-body{flex:1}
+    .modal .close{background:transparent;border:0;font-size:16px;cursor:pointer}
+  </style>
 </head>
 <body data-theme="light">
   <div class="topbar">
@@ -154,20 +163,40 @@ export function writePlotlyHtml(outPath: string, repoLabel: string, rev: string,
         </div>
 
         <div style="display:grid;grid-template-columns:1fr 320px;gap:12px">
-          <div id="plot-main" style="min-height:420px;border-radius:8px"></div>
+          <div id="plot-main" style="min-height:420px;border-radius:8px;position:relative">
+            <button id="expandMain" class="btn btn-ghost" style="position:absolute;right:8px;top:8px">⤢</button>
+          </div>
           <div style="display:flex;flex-direction:column;gap:12px">
             <div class="panel" style="padding:8px;min-height:180px">
               <div class="small">Tests over time</div>
-              <div id="plot-tests" style="height:160px"></div>
+              <div id="plot-tests" style="height:160px;position:relative">
+                <button id="expandTests" class="btn btn-ghost" style="position:absolute;right:8px;top:6px">⤢</button>
+              </div>
             </div>
             <div class="panel" style="padding:8px;min-height:180px">
               <div class="small">Avg commit msg length</div>
-              <div id="plot-msg" style="height:160px"></div>
+              <div id="plot-msg" style="height:160px;position:relative">
+                <button id="expandMsg" class="btn btn-ghost" style="position:absolute;right:8px;top:6px">⤢</button>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </section>
+  </div>
+
+  <!-- Modal overlay for expanded chart -->
+  <div id="modalOverlay" class="modal-overlay" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-header">
+        <div id="modalTitle" class="small">Expanded chart</div>
+        <div>
+          <button id="modalExport" class="btn btn-primary small">Export</button>
+          <button id="modalClose" class="close">✕</button>
+        </div>
+      </div>
+      <div class="modal-body"><div id="modalPlot" style="width:100%;height:100%"></div></div>
+    </div>
   </div>
 
   <script src="${resolvedPlotlySrc}"></script>
@@ -249,9 +278,7 @@ export function writePlotlyHtml(outPath: string, repoLabel: string, rev: string,
     function plot(){
       // main: code + docs
       const palette = [getComputedStyle(document.documentElement).getPropertyValue('--accent-1') || '#0ea5e9', getComputedStyle(document.documentElement).getPropertyValue('--accent-2') || '#7c3aed'];
-      const mainTraces = [];
-      if(seriesState.code) mainTraces.push({ x: filtered.dates, y: filtered.nonTestLoc, name:'Non-test LOC', mode:'lines', line:{color:palette[0],width:2}, hovertemplate:'%{x}<br>Non-test LOC: %{y:,}<extra></extra>' });
-      if(seriesState.docs) mainTraces.push({ x: filtered.dates, y: filtered.docLoc, name:'Markdown LOC', mode:'lines', line:{color:palette[1],width:2,dash:'dot'}, hovertemplate:'%{x}<br>Markdown LOC: %{y:,}<extra></extra>' });
+      const mainTraces = buildMainTraces(palette);
       Plotly.react(document.getElementById('plot-main'), mainTraces, buildMainLayout(), config);
 
       // tests sparkline
@@ -264,6 +291,13 @@ export function writePlotlyHtml(outPath: string, repoLabel: string, rev: string,
 
       updateCsvLink();
       renderSummary();
+    }
+
+    function buildMainTraces(palette){
+      const t = [];
+      if(seriesState.code) t.push({ x: filtered.dates, y: filtered.nonTestLoc, name:'Non-test LOC', mode:'lines', line:{color:palette[0],width:2}, hovertemplate:'%{x}<br>Non-test LOC: %{y:,}<extra></extra>' });
+      if(seriesState.docs) t.push({ x: filtered.dates, y: filtered.docLoc, name:'Markdown LOC', mode:'lines', line:{color:palette[1],width:2,dash:'dot'}, hovertemplate:'%{x}<br>Markdown LOC: %{y:,}<extra></extra>' });
+      return t;
     }
 
     // initialize inputs
@@ -306,6 +340,46 @@ export function writePlotlyHtml(outPath: string, repoLabel: string, rev: string,
       });
       document.getElementById('exportMsg')?.addEventListener('click', ()=>{
         Plotly.toImage(document.getElementById('plot-msg'), {format:'png',height:400,width:800}).then(url=>{ const a=document.createElement('a'); a.href=url; a.download='${escapeHtml(repoLabel)}-msg.png'; document.body.appendChild(a); a.click(); a.remove(); });
+      });
+
+      // expand modal handlers
+      function openModal(title, sourceEl){
+        const overlay = document.getElementById('modalOverlay');
+        const titleEl = document.getElementById('modalTitle');
+        const modalPlot = document.getElementById('modalPlot');
+        if(!overlay || !titleEl || !modalPlot) return;
+        titleEl.textContent = title;
+        overlay.classList.add('open');
+        overlay.setAttribute('aria-hidden', 'false');
+        // re-render the same trace(s) into modalPlot
+        try{
+          // find which plot to copy by id
+          if(sourceEl === 'main'){
+            Plotly.react(modalPlot, mainTracesForModal(), buildMainLayout(), config);
+          } else if(sourceEl === 'tests'){
+            Plotly.react(modalPlot, [{ x: filtered.dates, y: filtered.tests, mode:'lines', line:{color:getComputedStyle(document.documentElement).getPropertyValue('--accent-3')||'#06b6d4',width:2}, fill:'tozeroy' }], {margin:{l:60,r:60,t:60,b:60}}, config);
+          } else if(sourceEl === 'msg'){
+            Plotly.react(modalPlot, [{ x: filtered.dates, y: filtered.msgAvg, mode:'lines', line:{color:'#ef4444',width:2} }], {margin:{l:60,r:60,t:60,b:60}}, config);
+          }
+        }catch(e){ /* ignore */ }
+      }
+
+      function closeModal(){
+        const overlay = document.getElementById('modalOverlay');
+        if(!overlay) return; overlay.classList.remove('open'); overlay.setAttribute('aria-hidden', 'true');
+      }
+
+      document.getElementById('expandMain')?.addEventListener('click', ()=> openModal('Non-test & Markdown LOC', 'main'));
+      document.getElementById('expandTests')?.addEventListener('click', ()=> openModal('Test cases over time', 'tests'));
+      document.getElementById('expandMsg')?.addEventListener('click', ()=> openModal('Avg commit msg length', 'msg'));
+
+      document.getElementById('modalClose')?.addEventListener('click', ()=> closeModal());
+      document.getElementById('modalOverlay')?.addEventListener('click', (e)=>{ if(e.target === document.getElementById('modalOverlay')) closeModal(); });
+      document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeModal(); });
+
+      document.getElementById('modalExport')?.addEventListener('click', ()=>{
+        const modalPlot = document.getElementById('modalPlot'); if(!modalPlot) return;
+        Plotly.toImage(modalPlot, {format:'png',height:900,width:1400}).then(url=>{ const a=document.createElement('a'); a.href=url; a.download='${escapeHtml(repoLabel)}-expanded.png'; document.body.appendChild(a); a.click(); a.remove(); });
       });
 
       // initial render
