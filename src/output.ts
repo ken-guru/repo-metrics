@@ -41,13 +41,45 @@ export function writePlotlyHtml(outPath: string, repoLabel: string, rev: string,
   const tests = rows.map(r => r.totalTests);
   const msgAvg = rows.map(r => r.commitMsgLenAvg);
   const title = `Code (non-test) & Markdown LOC vs Test Cases vs Commit Msg Length (avg ${msgAvgWindow})<br>${repoLabel} (rev: ${rev})`;
-  const resolvedPlotlySrc = (function(){
-    if (plotlySrc) return plotlySrc;
-    try { const localCandidate = 'node_modules/plotly.js-dist-min/plotly.min.js'; if (fs.existsSync(localCandidate)) return localCandidate; } catch {
+  // Prefer to inline Plotly by default for a single-file HTML. If the caller
+  // provides `plotlySrc` we honor it; otherwise try to read the local
+  // node_modules copy and inline its contents. If that's not available,
+  // fall back to the CDN.
+  let inlinePlotlyJs: string | undefined = undefined;
+  let resolvedPlotlySrc: string | undefined = undefined;
+  if (typeof plotlySrc === 'string' && plotlySrc.length) {
+    // If caller passed an explicit src that looks like a URL, use it as src;
+    // if it's a local path, try to inline the file contents.
+    if (/^https?:\/\//i.test(plotlySrc) || plotlySrc.startsWith('//')) {
+      resolvedPlotlySrc = plotlySrc;
+    } else {
+      try {
+        const candidate = path.resolve(plotlySrc);
+        if (fs.existsSync(candidate)) {
+          inlinePlotlyJs = fs.readFileSync(candidate, 'utf8');
+        } else {
+          // treat as relative to project node_modules
+          const nm = path.join(process.cwd(), plotlySrc);
+          if (fs.existsSync(nm)) inlinePlotlyJs = fs.readFileSync(nm, 'utf8');
+        }
+      } catch (_e) { /* ignore read errors */ }
+    }
+  }
+
+  if (!inlinePlotlyJs && !resolvedPlotlySrc) {
+    try {
+      const localCandidate = path.join(process.cwd(), 'node_modules', 'plotly.js-dist-min', 'plotly.min.js');
+      if (fs.existsSync(localCandidate)) {
+        inlinePlotlyJs = fs.readFileSync(localCandidate, 'utf8');
+      }
+    } catch {
       // ignore
     }
-    return 'https://cdn.plot.ly/plotly-2.35.2.min.js';
-  })();
+  }
+
+  if (!inlinePlotlyJs && !resolvedPlotlySrc) {
+    resolvedPlotlySrc = 'https://cdn.plot.ly/plotly-2.35.2.min.js';
+  }
 
   // Friendly CSV link (same base name as output HTML)
   const csvName = path.basename(outPath).replace(/\.html?$/i, '.csv');
@@ -199,7 +231,9 @@ export function writePlotlyHtml(outPath: string, repoLabel: string, rev: string,
     </div>
   </div>
 
-  <script src="${resolvedPlotlySrc}"></script>
+    ${inlinePlotlyJs ? (`<script>
+  ${inlinePlotlyJs}
+  </script>`) : (`<script src="${resolvedPlotlySrc}"></script>`)}
   <script>
     const raw = {
       dates: ${JSON.stringify(dates)},
@@ -355,7 +389,9 @@ export function writePlotlyHtml(outPath: string, repoLabel: string, rev: string,
         try{
           // find which plot to copy by id
           if(sourceEl === 'main'){
-            Plotly.react(modalPlot, mainTracesForModal(), buildMainLayout(), config);
+            // reuse the same palette logic as the main plot to produce identical traces
+            const palette = [getComputedStyle(document.documentElement).getPropertyValue('--accent-1') || '#0ea5e9', getComputedStyle(document.documentElement).getPropertyValue('--accent-2') || '#7c3aed'];
+            Plotly.react(modalPlot, buildMainTraces(palette), buildMainLayout(), config);
           } else if(sourceEl === 'tests'){
             Plotly.react(modalPlot, [{ x: filtered.dates, y: filtered.tests, mode:'lines', line:{color:getComputedStyle(document.documentElement).getPropertyValue('--accent-3')||'#06b6d4',width:2}, fill:'tozeroy' }], {margin:{l:60,r:60,t:60,b:60}}, config);
           } else if(sourceEl === 'msg'){
