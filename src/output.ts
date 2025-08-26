@@ -24,7 +24,10 @@ export function copyPlotlyToAssets(assetsDir: string, htmlPath: string, options?
     fs.copyFileSync(candidate, destPath);
     if (verbose) console.error(`Copied Plotly from ${candidate} to ${destPath}`);
     return path.relative(path.dirname(htmlPath) || '.', destPath).replace(/\\/g, '/');
-  } catch (err) { if (verbose) console.error('Failed to copy assets:', err); return undefined; }
+  } catch (_ignored) {
+    if (verbose) console.error('Failed to copy assets:', _ignored);
+    return undefined;
+  }
 }
 
 function escapeHtml(s: string): string {

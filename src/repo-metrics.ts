@@ -21,7 +21,7 @@ export const seemsBinary = Metrics.seemsBinary;
 export async function main() {
   const args = parseArgs();
   const verbose = !!args.verbose;
-  function log(...s: any[]) { if (verbose) console.error(...s); }
+  function log(...s: unknown[]) { if (verbose) console.error(...s.map(String)); }
   if (args.dryRun) {
     console.error(`Dry run: would analyze ${sanitizeRepoForDisplay(args.repo)} on rev ${args.branch ?? 'HEAD'}; no files will be written.`);
     return;
@@ -82,12 +82,22 @@ export async function main() {
     Output.writePlotlyHtml(htmlPath, displayName, rev, rows, win, plotlySrcToUse);
     log(`Wrote ${htmlPath}`);
 
-  } finally {
-    cleanup();
-  }
+    } finally {
+      cleanup();
+    }
 }
 
 const __filename = fileURLToPath(import.meta.url);
 if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(__filename)) {
-  main().catch(err => { const verbose = process.argv.includes('--verbose'); if (verbose) console.error(err); else console.error(err && (err.message || String(err))); process.exit(1); });
+  main().catch((err: unknown) => {
+    const verbose = process.argv.includes('--verbose');
+    if (verbose) console.error(err);
+    else {
+      let msg: string;
+      if (typeof err === 'object' && err !== null && 'message' in err) msg = String((err as any).message);
+      else msg = String(err);
+      console.error(msg);
+    }
+    process.exit(1);
+  });
 }

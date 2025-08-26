@@ -48,7 +48,13 @@ export function sanitizeRepoForDisplay(s: string): string {
 }
 
 export function mkTempDir(prefix: string): string {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), prefix)); try { fs.chmodSync(dir, 0o700); } catch(_) {} return dir;
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
+  try {
+    fs.chmodSync(dir, 0o700);
+  } catch (_ignored) {
+    // ignore chmod failures on some platforms
+  }
+  return dir;
 }
 
 export function sanitizeOutputPrefix(p: string): string {

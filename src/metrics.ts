@@ -1,4 +1,5 @@
 import path from 'node:path';
+import type { SimpleGit } from 'simple-git';
 import { listTree, catBlob } from './git';
 
 export type BlobMetrics = { codeLoc: number; testCases: number; docLoc: number };
@@ -38,7 +39,7 @@ export function countTestCases(text: string, ext: string): number { const patter
 
 export function seemsBinary(buf: Buffer): boolean { return buf.includes(0); }
 
-export async function computeMetricsForCommit(git: any, repoPath: string, commit: string, blobCache: Map<string, BlobMetrics>, maxFileBytes: number) {
+export async function computeMetricsForCommit(git: SimpleGit, repoPath: string, commit: string, blobCache: Map<string, BlobMetrics>, maxFileBytes: number) {
   let nonTestLoc = 0, totalTests = 0, docLoc = 0;
   const entries = await listTree(git, commit);
   for (const e of entries) {
