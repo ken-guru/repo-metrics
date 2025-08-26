@@ -102,6 +102,18 @@ If your repository's default `GITHUB_TOKEN` does not have sufficient permissions
 
 See `.github/workflows/publish-metrics.yml` for the exact CI behavior.
 
+More CI details
+---------------
+
+Full CI and publishing instructions are in `.github/CI.md` (created in this repo). The CI doc explains:
+
+- How the workflow runs by default (tests, build, generate artifacts)
+- How to manually dispatch the `Publish repo metrics` workflow and set `publish: true` to publish to GitHub Pages
+- How to create and add a `GH_PAT` repository secret (preferred when `GITHUB_TOKEN` lacks release/upload permissions)
+- How to download artifacts from the workflow run or release
+
+Note: When the workflow creates a release on pushes the action will now post a short comment on the related PR (if present) or the commit with links to the release and the workflow run so reviewers can quickly find the generated artifacts.
+
 Running module-level tests
 
 The repository includes module-level unit tests under `test/` which exercise the `cli`, `metrics`, and `output` modules directly.
