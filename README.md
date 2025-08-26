@@ -1,6 +1,6 @@
 # repo-metrics
 
-[![CI](https://github.com/ken-guru/repo-metrics/actions/workflows/ci.yml/badge.svg)](https://github.com/ken-guru/repo-metrics/actions/workflows/ci.yml)
+[![CI](https://github.com/ken-guru/repo-metrics/actions/workflows/ci.yml/badge.svg)](https://github.com/ken-guru/repo-metrics/actions/workflows/ci.yml) [![Pages](https://img.shields.io/github/deployments/ken-guru/repo-metrics/github-pages?label=pages&logo=github&color=blue)](https://ken-guru.github.io/repo-metrics/)
 
 Small CLI that scans a Git repository and produces two outputs:
 
