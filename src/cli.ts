@@ -18,13 +18,13 @@ export function parseArgs(): Args {
     if (t === '--branch') args.branch = a[++i] ?? null;
     else if (t === '--first-parent') args.firstParent = true;
     else if (t === '--include-merges') args.includeMerges = true;
-    else if (t === '--sample-every') args.sampleEvery = parseInt(a[++i]!, 10);
-    else if (t === '--max-commits') args.maxCommits = parseInt(a[++i]!, 10);
-    else if (t === '--max-file-bytes') args.maxFileBytes = parseInt(a[++i]!, 10);
-    else if (t === '--msg-avg-window') args.msgAvgWindow = parseInt(a[++i]!, 10);
+    else if (t === '--sample-every') args.sampleEvery = parseInt(a[++i], 10);
+    else if (t === '--max-commits') args.maxCommits = parseInt(a[++i], 10);
+    else if (t === '--max-file-bytes') args.maxFileBytes = parseInt(a[++i], 10);
+    else if (t === '--msg-avg-window') args.msgAvgWindow = parseInt(a[++i], 10);
     else if (t === '--verbose') args.verbose = true;
     else if (t === '--plotly-src') args.plotlySrc = a[++i] ?? null;
-    else if (t === '--csv-decimals') args.csvDecimals = parseInt(a[++i]!, 10);
+    else if (t === '--csv-decimals') args.csvDecimals = parseInt(a[++i], 10);
     else if (t === '--dry-run') args.dryRun = true;
     else if (t === '--keep-temp') args.keepTemp = true;
     else if (t === '--assets') { const next = a[i+1]; if (!next || next.startsWith('--')) args.assetsDir = null; else args.assetsDir = a[++i]!; }

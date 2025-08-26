@@ -9,19 +9,20 @@ module.exports = [
       parser: tsParser,
       parserOptions: {
         sourceType: 'module',
+        project: './tsconfig.eslint.json',
         warnOnUnsupportedTypeScriptVersion: false,
       },
     },
     plugins: {
       '@typescript-eslint': tsPlugin,
     },
-    rules: {
-      // kept from previous config
+    // Merge recommended rules and the "requiring-type-checking" ruleset
+    rules: Object.assign({}, tsPlugin.configs.recommended.rules, tsPlugin.configs["recommended-requiring-type-checking"].rules, {
+      // keep a few previous exceptions
       'no-empty': 'off',
       'no-useless-escape': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
-      // recommended from eslint and plugin presets are not applied here; we add a small set
-    },
+    }),
   },
   // Overrides for tests
   {

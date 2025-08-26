@@ -45,7 +45,7 @@ export async function main() {
     let msgLenSum = 0;
 
     for (let i = 0; i < commits.length; i++) {
-      const c = commits[i]!;
+      const c = commits[i];
       if ((i + 1) % 50 === 0 || i === 0) process.stderr.write(`  … ${i + 1}/${commits.length}\n`);
       const { nonTestLoc, totalTests, docLoc } = await Metrics.computeMetricsForCommit(git, repoPath, c, blobCache, args.maxFileBytes);
       const iso = await Git.commitDateIso(git, c);

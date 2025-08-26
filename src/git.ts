@@ -65,11 +65,11 @@ export async function listTree(git: SimpleGit, commit: string): Promise<TreeEntr
     if (tabIdx < 0) continue;
     const meta = line.slice(0, tabIdx).trim().split(/\s+/);
     const filePath = line.slice(tabIdx + 1);
-    const mode = meta[0]!;
+    const mode = meta[0];
     const type = meta[1] as 'blob' | 'tree';
-    const sha = meta[2]!;
+    const sha = meta[2];
     let size: number | null = null;
-    if (meta.length >= 4 && /^\d+$/.test(meta[3]!)) size = parseInt(meta[3]!, 10);
+    if (meta.length >= 4 && /^\d+$/.test(meta[3])) size = parseInt(meta[3], 10);
     entries.push({ mode, type, sha, size, path: filePath });
   }
   return entries;
