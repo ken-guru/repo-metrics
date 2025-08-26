@@ -10,10 +10,20 @@ What's run by default (push to `main`)
 - Generate metrics artifacts and upload them as a workflow artifact (no publishing to GitHub Pages by default)
 - Create a release (pushes only) and attach `metrics/index.html` and `metrics/metrics.csv` as release assets (if release creation succeeds)
 
-Manual publishing
+Automatic publishing on push
+---------------------------
 
-- To publish the generated site to GitHub Pages, manually dispatch the workflow (Actions → `Publish repo metrics` → Run workflow) and set `publish` to `true`.
-- The `publish-pages` job will then build, generate, and publish the site to GitHub Pages (branch `gh-pages` via `actions-gh-pages`).
+This workflow now publishes automatically when commits are pushed to the `main` branch. The `publish-pages` job will run after the main `build-and-package` job completes and deploy the generated `public/` directory to GitHub Pages using GitHub's official Pages actions.
+
+Permissions to check
+--------------------
+
+To allow automatic publishing on pushes you need to ensure repository Actions permissions permit page deployments. Check repository Settings → Actions → General and confirm:
+
+- "Allow all actions" or allow the specific Pages actions used (configure-pages, upload-pages-artifact, deploy-pages).
+- Workflow permissions allow the `GITHUB_TOKEN` to access repository contents for publishing (Read & write).
+
+If your organization or repository policy restricts publishing, you can still run the `build-and-package` job locally and publish manually if required.
 
 Using a Personal Access Token (GH_PAT)
 
@@ -46,7 +56,7 @@ Troubleshooting
 
 - If create-release fails with "Resource not accessible by integration", ensure:
   - Workflow permissions (Settings → Actions → General) allow "Read and write permissions" for the `GITHUB_TOKEN`, or
-  - You have added a `GH_PAT` secret with `repo` scope and re-run the workflow with `publish: true`.
+  - You have added a `GH_PAT` secret with `repo` scope and re-run the workflow.
 
 Contact
 

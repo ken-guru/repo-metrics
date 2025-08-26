@@ -3,12 +3,6 @@ name: Publish repo metrics
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:
-    inputs:
-      publish:
-        description: 'Publish generated metrics to GitHub Pages (true/false)'
-        required: false
-        default: 'false'
 
 jobs:
   build-and-package:
@@ -40,22 +34,34 @@ jobs:
             ${{ runner.os }}-node-
 
       - name: Install dependencies
-        run: npm ci --silent
+        run: |
+          set -euxo pipefail
+          node --version
+          npm --version
+          npm ci
 
       - name: Run tests
-        run: npm test --silent
+        run: |
+          set -euxo pipefail
+          npm test
 
       - name: Build
-        run: npm run build --silent
+        run: |
+          set -euxo pipefail
+          npm run build
 
       - name: Generate metrics artifact
         run: |
+          set -euxo pipefail
           mkdir -p artifacts
+          echo "Running generator (node $(node --version), npm $(npm --version))"
           node dist/repo-metrics.js . --output-prefix artifacts/metrics --max-commits 2000 --verbose
           # normalize output into a metrics/ directory with index.html for convenient download
           mkdir -p artifacts/metrics
           if [ -f artifacts_metrics.html ]; then mv artifacts_metrics.html artifacts/metrics/index.html; fi
           if [ -f artifacts_metrics.csv ]; then mv artifacts_metrics.csv artifacts/metrics/metrics.csv; fi
+          echo "Artifacts directory listing:"; ls -la artifacts || true
+          echo "Artifacts/metrics listing:"; ls -la artifacts/metrics || true
 
       - name: Upload metrics artifact
         uses: actions/upload-artifact@v4
@@ -142,7 +148,8 @@ jobs:
   publish-pages:
     needs: build-and-package
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.publish == 'true'
+    # Run automatically on pushes to main
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
 
@@ -163,8 +170,12 @@ jobs:
           node dist/repo-metrics.js . --output-prefix public/metrics --max-commits 2000 --verbose
 
       - name: Publish to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
+        uses: actions/configure-pages@v3
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v1
         with:
-          github_token: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
-          publish_dir: ./public
-          keep_files: false
+          path: ./public
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v1
