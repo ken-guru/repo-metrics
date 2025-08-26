@@ -1,32 +1,30 @@
 # CI and Publishing
 
-This repository includes an optional GitHub Actions workflow that dogfoods the generator by running it on the repository itself and producing artifacts.
+This repository provides a small CLI generator (see `src/`) that produces metrics artifacts (an HTML file and a CSV). There is no built-in publishing workflow in this repository — publishing to GitHub Pages is handled by configuring Pages in the repository settings.
 
-What's run by default (push to `main`)
+Typical actions you might run (locally or in your own workflow):
 
 - Install dependencies (`npm ci`)
 - Run tests (`npm test`)
 - Build (`npm run build`)
-- Generate metrics artifacts and upload them as a workflow artifact (no publishing to GitHub Pages by default)
-- Create a release (pushes only) and attach `metrics/index.html` and `metrics/metrics.csv` as release assets (if release creation succeeds)
+- Generate metrics artifacts (HTML + CSV) using the CLI
+- Optionally attach artifacts to a release or upload them from your own CI workflow
 
 Publishing
 ----------
 
-This repository is public and the workflow publishes automatically on pushes to the `main` branch. The `publish-pages` job runs after the `build-and-package` job completes and deploys the generated `public/` directory using GitHub's official Pages actions.
+Publishing the generated artifacts to GitHub Pages is configured through the repository's Pages settings (Settings → Pages). Because this repository no longer contains an automatic publishing workflow, enable Pages and point it to the branch/folder you want to serve (for example, `gh-pages` branch or the repository root of a `docs/` folder) via the repository's UI.
 
 Permissions to check
 --------------------
 
-Ensure repository Actions permissions allow Pages deployments. Check repository Settings → Actions → General and confirm:
-
-- "Allow all actions" or allow the specific Pages actions used (`configure-pages`, `upload-pages-artifact`, `deploy-pages`).
-- Workflow permissions allow the `GITHUB_TOKEN` to access repository contents for publishing (Read & write).
+- Ensure Pages is enabled in Settings → Pages and that the chosen source (branch/folder) is correct.
+- If you use an Actions-based workflow you create yourself to build and deploy, make sure repository Actions permissions allow the `GITHUB_TOKEN` to write (Read & write) or supply a `GH_PAT` secret with `repo` scope.
 
 Optional: supply a Personal Access Token (GH_PAT)
 ---------------------------------------------
 
-If you prefer to use an explicit PAT for release/comment/upload operations, add a `GH_PAT` secret (PAT with `repo` scope). The workflow will use `GH_PAT` when present; otherwise it uses the built-in `GITHUB_TOKEN`.
+If you want CI to create releases, post comments, or upload artifacts using a token with full repository access, add a `GH_PAT` secret (PAT with `repo` scope). Without such a workflow in this repo, GH_PAT is only necessary for workflows you create that require it.
 
 1. Create a PAT: https://github.com/settings/tokens (give it `repo` scope).
 2. Go to the repository → Settings → Secrets & variables → Actions → New repository secret
@@ -34,8 +32,8 @@ If you prefer to use an explicit PAT for release/comment/upload operations, add 
 
 Downloading artifacts
 
-- After the default push job completes, artifacts can be downloaded from the workflow run's "Artifacts" section.
-- The artifacts are in a `metrics/` folder containing `index.html` and `metrics.csv`.
+- If you run the generator in CI, uploaded artifacts are available from the workflow run's "Artifacts" section.
+- Otherwise run the generator locally (or in your own CI) to produce the `metrics/` files described below.
 
 Local testing
 

@@ -1,6 +1,6 @@
 # repo-metrics
 
-[![CI](https://github.com/ken-guru/repo-metrics/actions/workflows/ci.yml/badge.svg)](https://github.com/ken-guru/repo-metrics/actions/workflows/ci.yml) [![Pages](https://img.shields.io/github/deployments/ken-guru/repo-metrics/github-pages?label=pages&logo=github&color=blue)](https://ken-guru.github.io/repo-metrics/)
+[![CI](https://github.com/ken-guru/repo-metrics/actions/workflows/ci.yml/badge.svg)](https://github.com/ken-guru/repo-metrics/actions/workflows/ci.yml)
 
 Small CLI that scans a Git repository and produces two outputs:
 
@@ -88,31 +88,11 @@ Module layout
 - `src/output.ts` - CSV and HTML writers, Plotly asset helpers
 - `src/repo-metrics.ts` - top-level orchestrator/entrypoint; re-exports helpers used in tests
 
-CI publishing and GitHub Pages
---------------------------------
 
-This repository includes an optional GitHub Actions workflow that dogfoods the generator by running it on the repository itself and producing artifacts. By default the workflow will:
+CI & publishing
+----------------
 
-- Run tests and build on pushes to `main`.
-- Generate the metrics artifact and attach it to the workflow run (no public publishing by default).
-
-To publish the generated site to GitHub Pages you must manually dispatch the workflow from the Actions tab and set the `publish` input to `true`. Publishing is opt-in to avoid accidentally exposing repository data.
-
-If your repository's default `GITHUB_TOKEN` does not have sufficient permissions to create releases or upload assets (common for workflows run from forks or restricted repos), create a Personal Access Token (PAT) with `repo` scope and add it to repository secrets as `GH_PAT`. The workflow will use `GH_PAT` if present.
-
-See `.github/workflows/publish-metrics.yml` for the exact CI behavior.
-
-More CI details
----------------
-
-Full CI and publishing instructions are in `.github/CI.md` (created in this repo). The CI doc explains:
-
-- How the workflow runs by default (tests, build, generate artifacts)
-- How to manually dispatch the `Publish repo metrics` workflow and set `publish: true` to publish to GitHub Pages
-- How to create and add a `GH_PAT` repository secret (preferred when `GITHUB_TOKEN` lacks release/upload permissions)
-- How to download artifacts from the workflow run or release
-
-Note: When the workflow creates a release on pushes the action will now post a short comment on the related PR (if present) or the commit with links to the release and the workflow run so reviewers can quickly find the generated artifacts.
+This repository provides the generator and tests; there is no built-in Pages publish workflow in the repository. See `.github/CI.md` for CI guidance and instructions to run the generator locally or from your own CI.
 
 Running module-level tests
 
