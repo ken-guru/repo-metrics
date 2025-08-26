@@ -88,6 +88,20 @@ Module layout
 - `src/output.ts` - CSV and HTML writers, Plotly asset helpers
 - `src/repo-metrics.ts` - top-level orchestrator/entrypoint; re-exports helpers used in tests
 
+CI publishing and GitHub Pages
+--------------------------------
+
+This repository includes an optional GitHub Actions workflow that dogfoods the generator by running it on the repository itself and producing artifacts. By default the workflow will:
+
+- Run tests and build on pushes to `main`.
+- Generate the metrics artifact and attach it to the workflow run (no public publishing by default).
+
+To publish the generated site to GitHub Pages you must manually dispatch the workflow from the Actions tab and set the `publish` input to `true`. Publishing is opt-in to avoid accidentally exposing repository data.
+
+If your repository's default `GITHUB_TOKEN` does not have sufficient permissions to create releases or upload assets (common for workflows run from forks or restricted repos), create a Personal Access Token (PAT) with `repo` scope and add it to repository secrets as `GH_PAT`. The workflow will use `GH_PAT` if present.
+
+See `.github/workflows/publish-metrics.yml` for the exact CI behavior.
+
 Running module-level tests
 
 The repository includes module-level unit tests under `test/` which exercise the `cli`, `metrics`, and `output` modules directly.

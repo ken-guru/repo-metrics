@@ -16,6 +16,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set publish token (prefer GH_PAT)
+        run: |
+          if [ -n "${{ secrets.GH_PAT }}" ]; then
+            echo "PUBLISH_TOKEN=${{ secrets.GH_PAT }}" >> $GITHUB_ENV
+          else
+            echo "PUBLISH_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
+          fi
+
       - name: Use Node.js 20
         uses: actions/setup-node@v4
         with:
@@ -60,33 +68,75 @@ jobs:
         id: create_release
         uses: actions/create-release@v1
         with:
-          tag_name: metrics-${{ github.sha }}
+          tag_name: metrics-${{ github.run_id }}-${{ github.sha }}
           release_name: Metrics - ${{ github.sha }}
           body: 'Automated metrics artifact for commit `${{ github.sha }}`'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ env.PUBLISH_TOKEN }}
+        # the job-level GITHUB_TOKEN env will be used (GH_PAT if set, otherwise the workflow token)
+
+      - name: Verify create-release produced upload_url
+        if: github.event_name == 'push'
+        run: |
+          echo "create_release outputs: ${{ toJson(steps.create_release.outputs) }}"
+          if [ -z "${{ steps.create_release.outputs.upload_url }}" ]; then
+            echo 'create-release did not return upload_url; failing early to avoid upload errors';
+            exit 1;
+          fi
 
       - name: Upload metrics HTML to release (pushes only)
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' && steps.create_release.outcome == 'success'
         uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ env.PUBLISH_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: artifacts/metrics/index.html
           asset_name: metrics.html
           asset_content_type: text/html
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload metrics CSV to release (pushes only)
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' && steps.create_release.outcome == 'success'
         uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ env.PUBLISH_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: artifacts/metrics/metrics.csv
           asset_name: metrics.csv
           asset_content_type: text/csv
+
+      - name: Comment with artifact & release links (pushes only)
+        if: github.event_name == 'push' && steps.create_release.outcome == 'success'
+        uses: actions/github-script@v6
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: metrics-${{ github.run_id }}-${{ github.sha }}
+        with:
+          github-token: ${{ env.PUBLISH_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const sha = context.sha;
+            const releaseTag = process.env.RELEASE_TAG;
+            const releaseUrl = `https://github.com/${owner}/${repo}/releases/tag/${releaseTag}`;
+            const runUrl = `https://github.com/${owner}/${repo}/actions/runs/${context.runId}`;
+            const lines = [
+              `Automated metrics artifacts have been generated for commit \`${sha}\`.`,
+              '',
+              `Release: ${releaseUrl}`,
+              `Workflow run: ${runUrl}`,
+              '',
+              "Artifacts (index.html, metrics.csv) are attached to the release and can also be downloaded from the workflow run's Artifacts section."
+            ];
+            const body = lines.join('\n');
+
+            // Find PRs associated with this commit and comment there if present, otherwise comment on the commit
+            const { data: prs } = await github.rest.repos.listPullRequestsAssociatedWithCommit({ owner, repo, commit_sha: sha });
+            if (prs && prs.length > 0) {
+              const prNumber = prs[0].number;
+              await github.rest.issues.createComment({ owner, repo, issue_number: prNumber, body });
+            } else {
+              await github.rest.repos.createCommitComment({ owner, repo, commit_sha: sha, body });
+            }
 
   publish-pages:
     needs: build-and-package
@@ -114,6 +164,6 @@ jobs:
       - name: Publish to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
           publish_dir: ./public
           keep_files: false
