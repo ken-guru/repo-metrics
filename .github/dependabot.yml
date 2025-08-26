@@ -1,0 +1,11 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    # Optional: ignore can be used to skip problematic packages
+    # ignore:
+    #   - dependency-name: "some-broken-package"
+    #     update-types: ["version-update:semver-major"]
