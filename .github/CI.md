@@ -21,14 +21,10 @@ Permissions to check
 - Ensure Pages is enabled in Settings → Pages and that the chosen source (branch/folder) is correct.
 - If you use an Actions-based workflow you create yourself to build and deploy, make sure repository Actions permissions allow the `GITHUB_TOKEN` to write (Read & write) or supply a `GH_PAT` secret with `repo` scope.
 
-Optional: supply a Personal Access Token (GH_PAT)
----------------------------------------------
+Note on CI tokens
+-----------------
 
-If you want CI to create releases, post comments, or upload artifacts using a token with full repository access, add a `GH_PAT` secret (PAT with `repo` scope). Without such a workflow in this repo, GH_PAT is only necessary for workflows you create that require it.
-
-1. Create a PAT: https://github.com/settings/tokens (give it `repo` scope).
-2. Go to the repository → Settings → Secrets & variables → Actions → New repository secret
-3. Name: `GH_PAT` and paste the token value.
+This repository does not include any built-in publishing workflows that require repository tokens. If you create your own CI workflow that needs to perform privileged operations (create releases, upload assets, or deploy), you will need to follow GitHub's documentation for storing and using secrets; we intentionally leave token guidance to your CI's documentation rather than embedding PAT examples here.
 
 Downloading artifacts
 
