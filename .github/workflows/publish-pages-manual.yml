@@ -1,0 +1,51 @@
+name: Publish pages (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      prepare:
+        description: 'Prepare pages artifacts (build into docs/)'
+        required: false
+        default: 'true'
+
+jobs:
+  prepare-pages:
+    name: Prepare Pages artifacts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci --silent
+
+      - name: Build
+        run: npm run build
+
+      - name: Prepare docs folder
+        if: ${{ inputs.prepare == 'true' }}
+        run: |
+          npm run docs:clean
+          node dist/repo-metrics.js . --output-prefix docs/metrics || true
+
+      - name: Upload artifacts (docs)
+        if: ${{ inputs.prepare == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: pages-docs
+          path: docs/
+
+      - name: Upload artifacts (metrics)
+        uses: actions/upload-artifact@v4
+        with:
+          name: metrics-artifacts
+          path: metrics/
+
+      - name: Summary
+        run: |
+          echo "Prepared artifacts. Download them from the Actions run's Artifacts section."
