@@ -58,11 +58,11 @@ export function writePlotlyHtml(outPath: string, repoLabel: string, rev: string,
         if (fs.existsSync(candidate)) {
           inlinePlotlyJs = fs.readFileSync(candidate, 'utf8');
         } else {
-          // treat as relative to project node_modules
-          const nm = path.join(process.cwd(), plotlySrc);
-          if (fs.existsSync(nm)) inlinePlotlyJs = fs.readFileSync(nm, 'utf8');
-        }
-      } catch (_e) { /* ignore read errors */ }
+            // treat as relative to project node_modules
+            const nm = path.join(process.cwd(), plotlySrc);
+            if (fs.existsSync(nm)) inlinePlotlyJs = fs.readFileSync(nm, 'utf8');
+          }
+        } catch { /* ignore read errors */ }
     }
   }
 
@@ -82,7 +82,6 @@ export function writePlotlyHtml(outPath: string, repoLabel: string, rev: string,
   }
 
   // Friendly CSV link (same base name as output HTML)
-  const csvName = path.basename(outPath).replace(/\.html?$/i, '.csv');
 
   const html = `<!doctype html>
 <html>

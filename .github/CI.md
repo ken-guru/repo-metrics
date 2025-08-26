@@ -10,27 +10,23 @@ What's run by default (push to `main`)
 - Generate metrics artifacts and upload them as a workflow artifact (no publishing to GitHub Pages by default)
 - Create a release (pushes only) and attach `metrics/index.html` and `metrics/metrics.csv` as release assets (if release creation succeeds)
 
-Automatic publishing on push
----------------------------
+Publishing
+----------
 
-This workflow now publishes automatically when commits are pushed to the `main` branch. The `publish-pages` job will run after the main `build-and-package` job completes and deploy the generated `public/` directory to GitHub Pages using GitHub's official Pages actions.
+This repository is public and the workflow publishes automatically on pushes to the `main` branch. The `publish-pages` job runs after the `build-and-package` job completes and deploys the generated `public/` directory using GitHub's official Pages actions.
 
 Permissions to check
 --------------------
 
-To allow automatic publishing on pushes you need to ensure repository Actions permissions permit page deployments. Check repository Settings → Actions → General and confirm:
+Ensure repository Actions permissions allow Pages deployments. Check repository Settings → Actions → General and confirm:
 
-- "Allow all actions" or allow the specific Pages actions used (configure-pages, upload-pages-artifact, deploy-pages).
+- "Allow all actions" or allow the specific Pages actions used (`configure-pages`, `upload-pages-artifact`, `deploy-pages`).
 - Workflow permissions allow the `GITHUB_TOKEN` to access repository contents for publishing (Read & write).
 
-If your organization or repository policy restricts publishing, you can still run the `build-and-package` job locally and publish manually if required.
+Optional: supply a Personal Access Token (GH_PAT)
+---------------------------------------------
 
-Using a Personal Access Token (GH_PAT)
-
-- If the default `GITHUB_TOKEN` is insufficient (e.g., restricted repo settings or runs from forks), create a PAT with `repo` scope and add it to repository secrets as `GH_PAT`.
-- The workflow prefers `GH_PAT` if present; otherwise it falls back to the default `GITHUB_TOKEN`.
-
-Setting GH_PAT (example)
+If you prefer to use an explicit PAT for release/comment/upload operations, add a `GH_PAT` secret (PAT with `repo` scope). The workflow will use `GH_PAT` when present; otherwise it uses the built-in `GITHUB_TOKEN`.
 
 1. Create a PAT: https://github.com/settings/tokens (give it `repo` scope).
 2. Go to the repository → Settings → Secrets & variables → Actions → New repository secret
