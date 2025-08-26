@@ -24,14 +24,24 @@ jobs:
       - name: Check for in-progress Pages deployment
         run: |
           set -euo pipefail
+          echo "Installing jq for JSON parsing..."
+          sudo apt-get update && sudo apt-get install -y jq
           echo "Checking for in-progress GitHub Pages deployments..."
           DEPLOYMENTS=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             "https://api.github.com/repos/${{ github.repository }}/deployments?environment=github-pages")
-          IN_PROGRESS=$(echo "$DEPLOYMENTS" | jq -r '.[] | select(.status=="in_progress") | .sha' | head -n1 || true)
-          if [ -n "$IN_PROGRESS" ]; then
-            echo "Found in-progress Pages deployment: $IN_PROGRESS"
-            echo "Failing early to avoid collision. Cancel the deployment or retry later."
-            exit 1
+          echo "$DEPLOYMENTS" | jq -r '.[] | select(.status=="in_progress") | .id' > /tmp/in_progress_ids || true
+          if [ -s /tmp/in_progress_ids ]; then
+            echo "Found in-progress Pages deployments (ids):"
+            cat /tmp/in_progress_ids
+            # Cancel each in-progress deployment by marking a status as inactive
+            while read -r dep_id; do
+              echo "Cancelling deployment $dep_id"
+              curl -s -X POST -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -H "Content-Type: application/json" \
+                -d '{"state":"inactive","description":"Cancelled by workflow to avoid collision"}' \
+                "https://api.github.com/repos/${{ github.repository }}/deployments/'$dep_id'/statuses"
+            done < /tmp/in_progress_ids
+          else
+            echo "No in-progress Pages deployments found."
           fi
 
       - name: Install dependencies
