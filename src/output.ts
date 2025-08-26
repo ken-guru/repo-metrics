@@ -58,8 +58,10 @@ export function writePlotlyHtml(outPath: string, repoLabel: string, rev: string,
   <meta charset="utf-8"/>
   <title>${escapeHtml(title)}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    :root{--bg:#f6f8fa;--card:#ffffff;--fg:#0f1724;--muted:#64748b;--accent-1:#0ea5e9;--accent-2:#7c3aed;--accent-3:#06b6d4;--glass:rgba(255,255,255,0.6)}
+    /* TailAdmin-inspired palette */
+    :root{--bg:#f8fafc;--card:#ffffff;--fg:#0f1724;--muted:#64748b;--accent-1:#2563eb;--accent-2:#7c3aed;--accent-3:#06b6d4;--glass:rgba(255,255,255,0.6)}
     [data-theme="dark"]{--bg:#071124;--card:#071825;--fg:#e6eef8;--muted:#9aa7b2;--glass:rgba(10,18,30,0.6)}
     html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg),#ffffff);color:var(--fg);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial}
     .topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;backdrop-filter:blur(6px);background:linear-gradient(90deg,rgba(255,255,255,0.6),transparent);box-shadow:0 2px 12px rgba(2,6,23,0.06)}
@@ -69,7 +71,9 @@ export function writePlotlyHtml(outPath: string, repoLabel: string, rev: string,
     .panel{background:var(--card);border-radius:12px;padding:14px;box-shadow:0 8px 24px rgba(2,6,23,0.06)}
     .controls{display:flex;flex-direction:column;gap:12px}
     .row{display:flex;gap:8px;align-items:center}
-    .btn{background:transparent;border:1px solid rgba(0,0,0,0.06);padding:8px 12px;border-radius:10px;font-size:13px;color:var(--fg);cursor:pointer}
+    .btn{padding:8px 12px;border-radius:10px;font-size:13px;color:var(--fg);cursor:pointer;border:0}
+    .btn-ghost{background:transparent;border:1px solid rgba(15,23,36,0.06);color:var(--fg)}
+    .btn-primary{background:var(--accent-1);color:#fff;box-shadow:0 6px 18px rgba(37,99,235,0.12)}
     .small{font-size:12px;color:var(--muted)}
     #plot{width:100%;height:66vh;border-radius:8px}
     .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px}
@@ -89,9 +93,9 @@ export function writePlotlyHtml(outPath: string, repoLabel: string, rev: string,
       <div class="meta">${escapeHtml(repoLabel)} — <code style="font-family:monospace">${escapeHtml(rev)}</code></div>
     </div>
     <div class="row">
-      <button id="themeToggle" class="btn small">Toggle Theme</button>
-      <button id="imgExport" class="btn small">Export PNG</button>
-      <a id="csvDownload" class="btn small" href="#">Download CSV</a>
+      <button id="themeToggle" class="btn btn-ghost small">Toggle</button>
+      <button id="imgExport" class="btn btn-ghost small">Export</button>
+      <a id="csvDownload" class="btn btn-ghost small" href="#">CSV</a>
     </div>
   </div>
 
@@ -143,9 +147,9 @@ export function writePlotlyHtml(outPath: string, repoLabel: string, rev: string,
           </div>
           <div style="display:flex;gap:8px;align-items:center">
             <div class="small">Avg window: ${msgAvgWindow}</div>
-            <button id="exportMain" class="btn small">Export Main</button>
-            <button id="exportTests" class="btn small">Export Tests</button>
-            <button id="exportMsg" class="btn small">Export Msg</button>
+            <button id="exportMain" class="btn btn-primary small">Main</button>
+            <button id="exportTests" class="btn btn-ghost small">Tests</button>
+            <button id="exportMsg" class="btn btn-ghost small">Msg</button>
           </div>
         </div>
 
