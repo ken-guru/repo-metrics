@@ -1,0 +1,23 @@
+{
+  "name": "repo-test-growth-ts",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p .",
+    "start": "node dist/repo_test_growth.js",
+    "scan": "ts-node src/repo_test_growth.ts",
+  "test": "vitest --run",
+  "test:watch": "vitest --watch"
+  },
+  "dependencies": {
+    "plotly.js-dist-min": "^2.35.2",
+    "simple-git": "^3.27.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.0",
+    "ts-node": "^10.9.2",
+    "vitest": "^1.0.0",
+    "typescript": "^5.5.4"
+  }
+}
