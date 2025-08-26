@@ -1,5 +1,7 @@
 # repo-metrics
 
+[![CI](https://github.com/ken-guru/repo-metrics/actions/workflows/ci.yml/badge.svg)](https://github.com/ken-guru/repo-metrics/actions/workflows/ci.yml)
+
 Small CLI that scans a Git repository and produces two outputs:
 
 - `metrics.csv` — per-commit metrics (non-test LOC, markdown LOC, test cases, commit message lengths)
