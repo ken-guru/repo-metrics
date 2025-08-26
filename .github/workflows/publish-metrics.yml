@@ -71,7 +71,8 @@ jobs:
           tag_name: metrics-${{ github.run_id }}-${{ github.sha }}
           release_name: Metrics - ${{ github.sha }}
           body: 'Automated metrics artifact for commit `${{ github.sha }}`'
-          token: ${{ env.PUBLISH_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ env.PUBLISH_TOKEN }}
         # the job-level GITHUB_TOKEN env will be used (GH_PAT if set, otherwise the workflow token)
 
       - name: Verify create-release produced upload_url
