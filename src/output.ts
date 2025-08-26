@@ -159,12 +159,7 @@ export function writePlotlyHtml(outPath: string, repoLabel: string, rev: string,
         </div>
 
         <div class="small">Series</div>
-        <div class="legend" id="seriesToggles">
-          <label><input type="checkbox" data-series="code" checked/> Non-test LOC</label>
-          <label><input type="checkbox" data-series="docs" checked/> Markdown LOC</label>
-          <label><input type="checkbox" data-series="tests" checked/> Test cases</label>
-          <label><input type="checkbox" data-series="msgAvg" checked/> Avg msg len</label>
-        </div>
+        <div class="small">Use the chart legend to toggle series visibility.</div>
 
         <div class="small">Filter by date</div>
         <div>
@@ -281,6 +276,8 @@ export function writePlotlyHtml(outPath: string, repoLabel: string, rev: string,
         title:{ text: ${JSON.stringify(title)}, x:0 },
         xaxis:{title:'Commit date', type:'date', showgrid:false},
         yaxis:{title:'LOC', rangemode:'tozero'},
+        showlegend: true,
+        legend: { orientation: 'h', x: 0, y: -0.12 },
         margin:{l:60,r:20,t:80,b:60},
         hovermode:'x unified'
       };
@@ -290,21 +287,18 @@ export function writePlotlyHtml(outPath: string, repoLabel: string, rev: string,
       return {margin:{l:40,r:20,t:30,b:30},xaxis:{showgrid:false,visible:false},yaxis:{showgrid:false}};
     }
 
-    const config = { responsive:true, displaylogo:false, modeBarButtonsToAdd:['toImage'], toImageButtonOptions:{format:'png',filename:'${escapeHtml(repoLabel)}-metrics',height:600,width:1000} };
-
-    // series state controlled by checkboxes
-    const seriesState = { code:true, docs:true, tests:true, msgAvg:true };
+  const config = { responsive:true, displaylogo:false, modeBarButtonsToAdd:['toImage'], toImageButtonOptions:{format:'png',filename:'${escapeHtml(repoLabel)}-metrics',height:600,width:1000} };
 
     function plot(){
-      // main: code + docs + tests + msgAvg all on a single canvas
+      // main: include all traces; legend toggles visibility
       const palette = [getComputedStyle(document.documentElement).getPropertyValue('--accent-1') || '#0ea5e9', getComputedStyle(document.documentElement).getPropertyValue('--accent-2') || '#7c3aed'];
       const mainTraces = buildMainTraces(palette);
 
       // add tests (secondary axis)
-      if(seriesState.tests) mainTraces.push({ x: filtered.dates, y: filtered.tests, name: 'Test cases', mode:'lines', yaxis:'y2', line:{color:getComputedStyle(document.documentElement).getPropertyValue('--accent-3')||'#06b6d4',width:2}, fill:'tozeroy', hovertemplate:'%{x}<br>Tests: %{y:,}<extra></extra>' });
+      mainTraces.push({ x: filtered.dates, y: filtered.tests, name: 'Test cases', mode:'lines', yaxis:'y2', line:{color:getComputedStyle(document.documentElement).getPropertyValue('--accent-3')||'#06b6d4',width:2}, fill:'tozeroy', hovertemplate:'%{x}<br>Tests: %{y:,}<extra></extra>' });
 
-      // add avg message length (secondary axis, but shown as scatter)
-      if(seriesState.msgAvg) mainTraces.push({ x: filtered.dates, y: filtered.msgAvg, name: 'Avg msg len', mode:'lines', yaxis:'y2', line:{color:'#ef4444',width:2,dash:'dot'}, hovertemplate:'%{x}<br>Avg msg len: %{y:.2f}<extra></extra>' });
+      // add avg message length (secondary axis)
+      mainTraces.push({ x: filtered.dates, y: filtered.msgAvg, name: 'Avg msg len', mode:'lines', yaxis:'y2', line:{color:'#ef4444',width:2,dash:'dot'}, hovertemplate:'%{x}<br>Avg msg len: %{y:.2f}<extra></extra>' });
 
       const layout = buildMainLayout();
       // extend layout with a secondary y-axis for counts/averages
@@ -319,8 +313,8 @@ export function writePlotlyHtml(outPath: string, repoLabel: string, rev: string,
 
     function buildMainTraces(palette){
       const t = [];
-      if(seriesState.code) t.push({ x: filtered.dates, y: filtered.nonTestLoc, name:'Non-test LOC', mode:'lines', line:{color:palette[0],width:2}, hovertemplate:'%{x}<br>Non-test LOC: %{y:,}<extra></extra>' });
-      if(seriesState.docs) t.push({ x: filtered.dates, y: filtered.docLoc, name:'Markdown LOC', mode:'lines', line:{color:palette[1],width:2,dash:'dot'}, hovertemplate:'%{x}<br>Markdown LOC: %{y:,}<extra></extra>' });
+      t.push({ x: filtered.dates, y: filtered.nonTestLoc, name:'Non-test LOC', mode:'lines', line:{color:palette[0],width:2}, hovertemplate:'%{x}<br>Non-test LOC: %{y:,}<extra></extra>' });
+      t.push({ x: filtered.dates, y: filtered.docLoc, name:'Markdown LOC', mode:'lines', line:{color:palette[1],width:2,dash:'dot'}, hovertemplate:'%{x}<br>Markdown LOC: %{y:,}<extra></extra>' });
       return t;
     }
 
@@ -336,13 +330,7 @@ export function writePlotlyHtml(outPath: string, repoLabel: string, rev: string,
         localStorage.setItem('repoMetrics:theme', next);
       });
 
-      // series toggles
-      document.querySelectorAll('#seriesToggles input[type=checkbox]').forEach(el=>{
-        el.addEventListener('change', (ev)=>{
-          const s = el.getAttribute('data-series'); seriesState[s] = el.checked;
-          plot();
-        });
-      });
+      // series toggles removed; use Plotly's legend to control visibility
 
       // date inputs
       const ds = document.getElementById('dateStart');

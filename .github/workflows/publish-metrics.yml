@@ -1,0 +1,119 @@
+name: Publish repo metrics
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Publish generated metrics to GitHub Pages (true/false)'
+        required: false
+        default: 'false'
+
+jobs:
+  build-and-package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            ./.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm ci --silent
+
+      - name: Run tests
+        run: npm test --silent
+
+      - name: Build
+        run: npm run build --silent
+
+      - name: Generate metrics artifact
+        run: |
+          mkdir -p artifacts
+          node dist/repo-metrics.js . --output-prefix artifacts/metrics --max-commits 2000 --verbose
+          # normalize output into a metrics/ directory with index.html for convenient download
+          mkdir -p artifacts/metrics
+          if [ -f artifacts_metrics.html ]; then mv artifacts_metrics.html artifacts/metrics/index.html; fi
+          if [ -f artifacts_metrics.csv ]; then mv artifacts_metrics.csv artifacts/metrics/metrics.csv; fi
+
+      - name: Upload metrics artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: repo-metrics-artifact
+          path: artifacts/metrics
+
+      - name: Create GitHub release for metrics (pushes only)
+        if: github.event_name == 'push'
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: metrics-${{ github.sha }}
+          release_name: Metrics - ${{ github.sha }}
+          body: 'Automated metrics artifact for commit `${{ github.sha }}`'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload metrics HTML to release (pushes only)
+        if: github.event_name == 'push'
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/metrics/index.html
+          asset_name: metrics.html
+          asset_content_type: text/html
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload metrics CSV to release (pushes only)
+        if: github.event_name == 'push'
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/metrics/metrics.csv
+          asset_name: metrics.csv
+          asset_content_type: text/csv
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish-pages:
+    needs: build-and-package
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.publish == 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci --silent
+
+      - name: Build
+        run: npm run build --silent
+
+      - name: Generate public site
+        run: |
+          mkdir -p public
+          node dist/repo-metrics.js . --output-prefix public/metrics --max-commits 2000 --verbose
+
+      - name: Publish to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          keep_files: false
