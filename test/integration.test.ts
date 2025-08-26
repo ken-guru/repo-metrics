@@ -4,6 +4,7 @@ import path from 'node:path';
 import { mkdtempSync } from 'node:fs';
 import { simpleGit } from 'simple-git';
 import { computeMetricsForCommit } from '../src/repo-metrics';
+import type { BlobMetrics } from '../src/metrics';
 
 // Integration test: create a tiny git repo and assert metrics
 describe('integration', () => {
@@ -26,7 +27,7 @@ describe('integration', () => {
       expect(commits.length).toBeGreaterThan(0);
       const commit = commits[commits.length - 1];
 
-      const blobCache = new Map();
+  const blobCache = new Map<string, BlobMetrics>();
       const metrics = await computeMetricsForCommit(g, tmp, commit, blobCache, 1000000);
       // nonTestLoc: foo.py has 2 non-comment lines (def and return)
       expect(metrics.nonTestLoc).toBeGreaterThanOrEqual(1);

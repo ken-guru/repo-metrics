@@ -16,7 +16,7 @@ describe('cli flags (dry-run, keep-temp)', () => {
     }
   });
 
-  it('ensureRepo keepTemp creates temp dir when cloning', async () => {
+  it('ensureRepo keepTemp creates temp dir when cloning', () => {
     // We won't actually clone a remote repo in this unit test; instead check interface exists.
     expect(typeof ensureRepo).toBe('function');
     expect(typeof copyPlotlyToAssets).toBe('function');
