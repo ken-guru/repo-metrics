@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { SimpleGit, simpleGit } from 'simple-git';
-import { mkTempDir, looksLikeUrl, sanitizeRepoForDisplay } from './cli';
+import { mkTempDir, looksLikeUrl, sanitizeRepoForDisplay } from './cli.js';
 
 export async function ensureRepo(repoArg: string, opts?: { keepTemp?: boolean }) {
   if (looksLikeUrl(repoArg)) {

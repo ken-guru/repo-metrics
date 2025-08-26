@@ -1,7 +1,7 @@
-import { parseArgs, sanitizeRepoForDisplay, mkTempDir, looksLikeUrl, sanitizeOutputPrefix } from './cli';
-import * as Git from './git';
-import * as Metrics from './metrics';
-import * as Output from './output';
+import { parseArgs, sanitizeRepoForDisplay, mkTempDir, looksLikeUrl, sanitizeOutputPrefix } from './cli.js';
+import * as Git from './git.js';
+import * as Metrics from './metrics.js';
+import * as Output from './output.js';
 import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -32,7 +32,7 @@ export async function main() {
     const rev = await Git.getRev(git, args.branch ?? null);
 
     let commits = await Git.listCommits(git, rev, { firstParent: args.firstParent, includeMerges: args.includeMerges, maxCommits: args.maxCommits ?? null });
-    if (args.sampleEvery > 1) commits = commits.filter((_, i) => (i % args.sampleEvery) === 0);
+  if (args.sampleEvery > 1) commits = commits.filter((_: string, i: number) => (i % args.sampleEvery) === 0);
     if (commits.length === 0) { process.stderr.write('No commits found for the specified revision.\n'); process.exit(4); }
 
     process.stderr.write(`Processing ${commits.length} commits ...\n`);

@@ -1,6 +1,6 @@
 import path from 'node:path';
 import type { SimpleGit } from 'simple-git';
-import { listTree, catBlob } from './git';
+import { listTree, catBlob } from './git.js';
 
 export type BlobMetrics = { codeLoc: number; testCases: number; docLoc: number };
 
