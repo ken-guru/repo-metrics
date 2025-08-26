@@ -52,5 +52,18 @@ export function mkTempDir(prefix: string): string {
 }
 
 export function sanitizeOutputPrefix(p: string): string {
-  if (!p || typeof p !== 'string') return 'metrics'; const base = path.basename(p); const clean = base.replace(/[^A-Za-z0-9._-]/g, '_'); if (!clean || clean.length===0) return 'metrics'; if (clean === '.' || clean === '..') return 'metrics'; return clean;
+  if (!p || typeof p !== 'string') return 'metrics';
+  // Remove leading ./ or ../ sequences to avoid creating names like '.._etc'
+  let s = p;
+  while (s.startsWith('./') || s.startsWith('../')) {
+    if (s.startsWith('./')) s = s.slice(2);
+    else if (s.startsWith('../')) s = s.slice(3);
+  }
+  // Join remaining path segments with underscores and sanitize characters
+  const parts = s.split(/[\/]+/).filter(Boolean);
+  const joined = parts.join('_') || s;
+  const clean = joined.replace(/[^A-Za-z0-9._-]/g, '_');
+  if (!clean || clean.length === 0) return 'metrics';
+  if (clean === '.' || clean === '..') return 'metrics';
+  return clean;
 }

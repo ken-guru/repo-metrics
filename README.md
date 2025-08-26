@@ -64,3 +64,23 @@ Notes & suggestions
 - This tool is heuristic-based and attempts to estimate test cases and LOC by file extension and simple regexes. It will not be perfect, especially for languages with unconventional test/matching patterns.
 - For offline HTML output, install `plotly.js-dist-min` locally or let the generated HTML use the CDN; the script prefers a local `node_modules/plotly.js-dist-min/plotly.min.js` path if present.
 - Consider running this tool in an isolated environment (container or VM) when scanning many or untrusted repositories.
+
+Module layout
+
+- `src/cli.ts` - CLI parsing and small helpers used by the tool
+- `src/git.ts` - Git plumbing (cloning, listing commits, reading blobs)
+- `src/metrics.ts` - Counting heuristics and `computeMetricsForCommit`
+- `src/output.ts` - CSV and HTML writers, Plotly asset helpers
+- `src/repo_test_growth.ts` - top-level orchestrator/entrypoint; re-exports helpers used in tests
+
+Running module-level tests
+
+The repository includes module-level unit tests under `test/` which exercise the `cli`, `metrics`, and `output` modules directly.
+
+Run the test suite with:
+
+```bash
+npm test
+```
+
+If you add new modules, add tests under `test/` and name them `*.unit.test.ts` for clarity.
