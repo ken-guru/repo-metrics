@@ -1,5 +1,6 @@
 title: repo-metrics
 baseurl: ""
+theme: jekyll-theme-primer
 exclude:
   - node_modules
   - dist
