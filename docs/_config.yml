@@ -1,0 +1,6 @@
+title: repo-metrics
+baseurl: ""
+exclude:
+  - node_modules
+  - dist
+  - docs/_site
