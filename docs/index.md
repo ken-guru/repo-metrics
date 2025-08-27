@@ -3,6 +3,8 @@ layout: default
 title: repo-metrics — Examples & Docs
 ---
 
+{% include head.html %}
+
 <div class="container">
   <div class="header">
     <div>
