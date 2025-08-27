@@ -1,5 +1,5 @@
 title: repo-metrics
-baseurl: ""
+baseurl: "/repo-metrics"
 theme: jekyll-theme-primer
 exclude:
   - node_modules
