@@ -1,0 +1,12 @@
+/* Minimal theme inspired by GitHub Pages themes; keep it simple and readable */
+:root{--bg:#0f1724;--card:#071825;--fg:#e6eef8;--muted:#94a3b8;--accent:#06b6d4}
+body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial;margin:0;background:linear-gradient(180deg,#0b1220,#071124);color:var(--fg);}
+.container{max-width:1000px;margin:48px auto;padding:20px}
+.header{display:flex;align-items:center;justify-content:space-between}
+.brand{font-size:20px;font-weight:700}
+.lead{color:var(--muted);margin-top:6px}
+.card{background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));padding:18px;border-radius:10px;margin-top:16px}
+.examples-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-top:12px}
+.example a{color:var(--accent);text-decoration:none}
+.footer{margin-top:36px;color:var(--muted);font-size:13px}
+@media (max-width:640px){.container{margin:20px;padding:12px}}
