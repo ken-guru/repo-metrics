@@ -1,0 +1,2 @@
+/* Compatibility shim: some layouts may request /style.css — import the actual assets file */
+@import url("assets/style.css");
